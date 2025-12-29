@@ -1,11 +1,22 @@
-/* @import "tw-animate-css";
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *)); */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "tailwindcss";
+
+/* Force include sidebar colors */
+.bg-blue-600 {
+  background-color: rgb(37 99 235);
+}
+
+.text-white {
+  color: white;
+}
+
+html,
+body,
+:root {
+  height: 100%;
+}
 
 html,
 body {

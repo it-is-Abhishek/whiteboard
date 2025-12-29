@@ -7,6 +7,9 @@ import {
     Authenticated,
     ConvexReactClient
 } from "convex/react";
+import { Loading } from "@/components/auth/loading";
+
+
 
 interface ClientProviderProps {
     children : React.ReactNode;
@@ -20,7 +23,10 @@ export const ConvexClientProvider = ({children}: ClientProviderProps) => {
     return (
         <ClerkProvider>
             <ConvexProviderWithClerk useAuth = {useAuth} client = {convex}>
-                {children}
+                    {children}
+                <AuthLoading>
+                    <Loading/>
+                </AuthLoading>
             </ConvexProviderWithClerk>
         </ClerkProvider>
     );
