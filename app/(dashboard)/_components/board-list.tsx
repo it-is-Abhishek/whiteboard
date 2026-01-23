@@ -6,6 +6,7 @@ import { EmptySearch } from "./empty-search";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BoardCard } from "./board-card";
+import { NewBoardButton } from "./new-board-button";
 
 interface BoardListProps {
   orgId: string;
@@ -47,12 +48,13 @@ export const BoardList = ({
                 {query.favorites ? "Favorite Boards" : "Team Boards"}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mt-8 pb-10">
-                {data.map((board) => (
+                <NewBoardButton orgId = {orgId}/>
+                {data?.map((board) => (
                     <BoardCard
                         key = {board._id}
                         id = {board._id}
                         title = {board._id}
-                        imageUrl = {board.title}
+                        imageUrl = {board.imageUrl}
                         authorId = {board.imageUrl}
                         createdAt = {board._creationTime}
                         orgId = {board.orgId}
