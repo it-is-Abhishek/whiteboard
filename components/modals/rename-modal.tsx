@@ -11,14 +11,17 @@ import {
 } from "@/components/ui/dialog";
 
 import { useRenameModal} from "@/store/use-rename-modal";
-import { init } from "next/dist/compiled/webpack/webpack";
-import { useEffect, useState } from "react";
+import { FormEventHandler, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useApiMutation } from "@/hooks/use-api-mutation";
+import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
 
 
 
 export const RenameModal = () => {
+    const {mutate, pending} = useApiMutation(api.board.update);
     
     const {
         isOpen,
@@ -33,7 +36,21 @@ export const RenameModal = () => {
         setTitle(initialValues.title);
     }, [initialValues]);
 
-    const onSubmit = () => {};
+    const onSubmit: FormEventHandler<HTMLFormElement> = (
+        e,
+    ) => {
+        e.preventDefault()
+
+        mutate({
+            id: initialValues.id,
+            title,
+        })
+            .then(() => {
+                toast.success("Board Renamed");
+                onClose();
+            })
+            .catch(() => toast.error("Failed to rename board"));
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -46,9 +63,9 @@ export const RenameModal = () => {
             <DialogDescription>
                 Enter a new title for this board
             </DialogDescription>
-            <form>
+            <form onSubmit={onSubmit} className="space-y-4">
                 <Input
-                    disabled = {false}
+                    disabled = {pending}
                     maxLength = {60}
                     value={60}
                     onChange={(e) => setTitle(e.target.value)}
@@ -60,7 +77,7 @@ export const RenameModal = () => {
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button disabled = {false}>
+                    <Button disabled = {pending} type='submit'>
                         Save
                     </Button>
                 </DialogFooter>
