@@ -12,6 +12,7 @@ import { Actions } from "@/components/actions";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
+import { useMutation } from "convex/react";
 
 interface BoardCardProps {
   id: string;
@@ -41,6 +42,8 @@ export const BoardCard = ({
     addSuffix: true,
   });
 
+  const handleFavorite = useMutation(api.board.favorite);
+
   const {
     mutate: onFavorite,
     pending: pendingFavorite,
@@ -56,8 +59,8 @@ export const BoardCard = ({
         .catch(() => toast.error("Failed to unFavorite"))
     }
     else{
-      onFavorite({ id, orgId })
-        .catch(() => toast.error("Failed to unFavorite"))
+      handleFavorite({ id, orgId })
+        .catch(() => toast.error("Failed to favorite"))
     }
   };
 

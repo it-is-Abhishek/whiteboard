@@ -109,8 +109,8 @@ export const favorites = mutation({
             )
         .unique();
 
-        if (!existingFavorite){
-            throw new Error("Favourited board not found");
+        if (existingFavorite){
+            return board;
         }
         await ctx.db.insert("userFavorites", {
             userId,
@@ -123,7 +123,7 @@ export const favorites = mutation({
 });
 
 export const unfavorites = mutation({
-    args: {id: v.id("boards"), orgId: v.string() },
+    args: {id: v.id("boards"), orgId: v.optional(v.string()) },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
 
@@ -150,7 +150,7 @@ export const unfavorites = mutation({
         .unique();
 
         if (!existingFavorite){
-            throw new Error("Favourited board not found");
+            return board;
         }
         await ctx.db.delete(existingFavorite._id);
 
