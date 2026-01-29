@@ -67,7 +67,7 @@ export const RenameModal = () => {
                 <Input
                     disabled = {pending}
                     maxLength = {60}
-                    value={60}
+                    value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Board title"
                 />

@@ -11,7 +11,7 @@ interface IRenameModal {
 
 export const useRenameModal = create <IRenameModal>((set) => ({
     isOpen: false,
-    onOpen: (id, title) => ({
+    onOpen: (id, title) => set({
         isOpen : true,
         initialValues : {id, title},
     }),

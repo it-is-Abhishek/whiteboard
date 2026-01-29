@@ -62,9 +62,9 @@ export const BoardList = ({
                     <BoardCard
                         key = {board._id}
                         id = {board._id}
-                        title = {board._id}
+                        title = {board.title}
                         imageUrl = {board.imageUrl}
-                        authorId = {board.imageUrl}
+                        authorId = {board.authorId}
                         createdAt = {board._creationTime}
                         orgId = {board.orgId}
                         isFavorite = {false}
