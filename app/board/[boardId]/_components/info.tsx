@@ -9,6 +9,10 @@ import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/hint";
+import { useRenameModal } from "@/store/use-rename-modal";
+import { Actions } from "@/components/actions";
+import { Action } from "@radix-ui/react-alert-dialog";
+import { Menu } from "lucide-react";
 
 
 interface InfoProps {
@@ -20,9 +24,20 @@ const font = Poppins({
     weight: ["600"],
 });
 
+const TabSeparator = () => {
+    return (
+        <div className="text-neutral-300 px-1.5">
+            |
+        </div>
+    );
+};
+
 export const Info = ({
     boardId,
 }:InfoProps) => {
+
+    const { onOpen } = useRenameModal();
+
     const data = useQuery(api.board.get, {
         id: boardId as Id<"boards">,
     });
@@ -49,6 +64,31 @@ export const Info = ({
                         </Link>
                     </Button>
                 </Hint>
+            <TabSeparator/>
+            <Hint label="Edit title" side="bottom" sideOffset={10}>
+                <Button 
+                    variant="board"
+                    className="text-bvase font-normal px-2"
+                    onClick={() => onOpen(data._id, data.title)}
+                >
+                    {data.title}
+                </Button>
+            </Hint>
+            <TabSeparator/>
+            <Actions
+                id = {data._id}
+                title = {data.title}
+                side = "bottom"
+                sideOffset = {10}
+            >
+                <div>
+                    <Hint label="Main menu" side="bottom" sideOffset = {10}>
+                        <Button size="icon" variant="board">
+                            <Menu/>
+                        </Button>
+                    </Hint>
+                </div>
+            </Actions>
         </div>
     );
 };
