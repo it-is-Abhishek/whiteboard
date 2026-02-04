@@ -13,7 +13,7 @@ interface UserAvatarProps {
     borderColor?: string;
 }
 
-export const UserAvatarProps = ({
+export const UserAvatar = ({
     src,
     name,
     fallback,
