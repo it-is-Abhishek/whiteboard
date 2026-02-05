@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { CanvasMode, CanvasState } from "@/types/canvas";
+import { useCallback, useState } from "react";
+import { Camera, CanvasMode, CanvasState } from "@/types/canvas";
 import { Info} from "./info";
 import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
-import { set } from "date-fns";
-import { useHistory, useCanRedo , useCanUndo} from "@liveblocks/react";
+import { useHistory, useCanRedo , useCanUndo, useMutation} from "@liveblocks/react";
+import { CursorPresence } from "./cursors-presence";
+import { pointerEventToCanvasPoint } from "@/lib/utils";
+import { setMinutes } from "date-fns";
 
 interface Canvasprops {
     boardId: string;
@@ -19,11 +21,32 @@ export const Canvas = ({
     const [canvasState, setCanvasState] = useState<CanvasState>({
         mode: CanvasMode.None,
     });
+    const [camera, setCamera] = useState({ x:0, y: 0 });
+
 
     const history = useHistory();
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();
 
+    const onWheel = useCallback((e: React.WheelEvent) => {
+        setCamera((camera) => ({
+            x: camera.x - e.deltaX,
+            y: camera.y - e.deltaY,
+        }));
+    }, []);
+
+    const onPointerMove = useMutation(({setMyPresence}, e: React.PointerEvent) => {
+        e.preventDefault();
+
+        const current = pointerEventToCanvasPoint(e, camera);
+
+        setMyPresence({ cursor: current});
+
+    }, [])
+
+    const onPointerLeave = useMutation(({ setMyPresence }) => {
+        setMyPresence({ cursor: null});
+    }, [])
 
     return (
         <main
@@ -38,6 +61,17 @@ export const Canvas = ({
                 undo = {history.undo}
                 redo = {history.redo}
             />
+            <svg
+                className="h-[100vh] w-[100vw]"
+                onWheel = {onWheel}
+                onPointerMove = {onPointerMove}
+                onPointerLeave = {onPointerLeave}
+            >
+                <g>
+                    <CursorPresence/>
+                </g>
+            </svg>
         </main>
     );
 };
+
