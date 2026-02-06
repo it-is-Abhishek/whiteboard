@@ -6,7 +6,7 @@ import {
 } from "@liveblocks/client";
 
 import { createRoomContext } from "@liveblocks/react";
-import { Layer,Color } from "@/types/canvas";
+import { Layer, Color } from "@/types/canvas";
 
 
 const client = createClient({
