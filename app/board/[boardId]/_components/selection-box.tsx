@@ -45,8 +45,7 @@ export const SelectionBox = memo(({
             return false;
         }
         
-        // Get the layer type - LiveObject requires .get() method
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         const layerAny = layer as unknown as { get: (key: string) => any; type?: number };
         const layerType = typeof layerAny.get === "function" ? layerAny.get("type") : layerAny.type;
         console.log("SelectionBox - layerType:", layerType, "LayerType.Path:", LayerType.Path);
@@ -75,11 +74,37 @@ export const SelectionBox = memo(({
                 <>
                     <rect
                         className="fill-white stroke-1 stroke-blue-500"
-                        x = {bounds.x - HANDLE_WIDTH / 2}
-                        y = {bounds.y - HANDLE_WIDTH / 2}
-                        width = {HANDLE_WIDTH}
-                        height = {HANDLE_WIDTH}
-                        style={{ cursor: "nwse-resize" }}
+                        x = {0}
+                        y = {0}
+
+                        style = {{
+                            cursor: "nwse-resize",
+                            width: `${HANDLE_WIDTH}px`,
+                            height: `${HANDLE_WIDTH}px`,
+                            transform: `translate(${bounds.x-HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`
+                        }}
+                        onPointerDown = {(e) => {
+                            e.stopPropagation();
+                            //TODO: ADD resize handler
+                        }}
+
+                    />
+                    
+                    <rect
+                        className="fill-white stroke-1 stroke-blue-500"
+                        x = {0}
+                        y = {0}
+
+                        style = {{
+                            cursor: "ns-resize",
+                            width: `${HANDLE_WIDTH}px`,
+                            height: `${HANDLE_WIDTH}px`,
+                            transform: `translate(${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`
+                        }}
+                        onPointerDown = {(e) => {
+                            e.stopPropagation();
+                            //TODO: ADD resize handler
+                        }}
                     />
                 </>
             )}
