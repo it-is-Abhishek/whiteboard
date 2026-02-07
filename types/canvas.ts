@@ -67,15 +67,6 @@ export type NoteLayer = {
     fill: Color;
     value?: string;
 };
-export type NoteLayer = {
-    type: LayerType.Note;
-    x: number;
-    y: number;
-    height: number;
-    width: number;
-    fill: Color;
-    value?: string;
-};
 
 export type Point = {
     x: number;
@@ -107,6 +98,7 @@ export type CanvasState =
     | {
         mode: CanvasMode.Translating,
         current: Point;
+        initialPoint: Point;
       }
     | {
         mode: CanvasMode.Inserting,

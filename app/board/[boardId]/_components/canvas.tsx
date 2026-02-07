@@ -7,12 +7,13 @@ import { Participants } from "./participants";
 import { Toolbar } from "./toolbar";
 import { useHistory, useCanRedo , useCanUndo, useMutation, useStorage, useOthersMapped} from "@liveblocks/react";
 import { CursorPresence } from "./cursors-presence";
-import { pointerEventToCanvasPoint, connectionIdColor, resizeBounds} from "@/lib/utils";
+import { pointerEventToCanvasPoint, connectionIdColor, resizeBounds, findIntersectingLayersWithRectangle} from "@/lib/utils";
 import { setMinutes } from "date-fns";
 import { nanoid } from "nanoid";
 import { LiveObject, LiveList, LiveMap } from "@liveblocks/client";
 import { LayerPreview } from "./layer-preview";
 import { SelectionBox } from "./selection-box";
+import { SelectionTools } from "./selection-tools";
 
 const MAX_LAYERS = 100;
 
@@ -75,22 +76,27 @@ export const Canvas = ({
 
     }, [lastUsedColor]);
 
+
     const translateSelectedLayers = useMutation((
         {storage, self},
         point: Point,
     ) => {
-        if (canvasState.mode !== CanvasMode.Translating){
+        if (canvasState.mode !== CanvasMode.Translating || !canvasState.initialPoint){
             return;
         }
 
         const offset = {
-            x: point.x - canvasState.current.x,
-            y: point.y - canvasState.current.y,
+            x: point.x - canvasState.initialPoint.x,
+            y: point.y - canvasState.initialPoint.y,
         };
 
-        const liveLayers = storage.get("layers");
+        const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
+        if (!liveLayers) return;
 
-        for (const id of self.presence.selection){
+        const selection = self.presence.selection as string[] | undefined;
+        if (!selection) return;
+
+        for (const id of selection){
             const layer = liveLayers.get(id);
 
             if (layer){
@@ -101,7 +107,7 @@ export const Canvas = ({
             }
         }
 
-        setCanvasState({ mode: CanvasMode.Translating, current: point});
+        setCanvasState({ mode: CanvasMode.Translating, current: point, initialPoint: point});
 
     }, [
         canvasState,
@@ -110,10 +116,50 @@ export const Canvas = ({
     const unselectLayer = useMutation((
         {self, setMyPresence }
     ) => {
-        if (self.presence.selection.length > 0) {
+        const selection = self.presence.selection as string[] | undefined;
+        if (selection && selection.length > 0) {
             setMyPresence({ selection: []}, { addToHistory: true});
         }
     }, [])
+
+    const updateSelectionNet = useMutation((
+        { storage, setMyPresence},
+        current: Point,
+        origin: Point,
+    ) => {
+        const layers = storage.get("layers").toImmutable();
+        setCanvasState({
+            mode: CanvasMode.SelectionNet,
+            origin,
+            current,
+        });
+
+        const ids = findIntersectingLayersWithRectangle(
+            layerIds,
+            layers,
+            origin,
+            current,
+        );
+
+        setMyPresence({ selection: ids }, { addToHistory: true });
+    }, [layerIds])
+
+    const startMultiSelection = useCallback((
+        current: Point,
+        origin: Point,
+    ) => {
+        if (
+            Math.abs(current.x - origin.x) + Math.abs(current.y - origin.y) > 5
+        ){
+            setCanvasState({
+                mode: CanvasMode.SelectionNet,
+                origin,
+                current,
+            });
+        };
+    }, [])
+
+
 
     const resizeSelectedLayer = useMutation((
         { storage , self},
@@ -129,8 +175,13 @@ export const Canvas = ({
             point
         );
 
-        const liveLayers = storage.get("layers");
-        const layer = liveLayers.get(self.presence.selection[0]);
+        const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
+        if (!liveLayers) return;
+
+        const selection = self.presence.selection as string[] | undefined;
+        if (!selection || selection.length === 0) return;
+
+        const layer = liveLayers.get(selection[0]);
 
         if (layer){
             layer.update(bounds);
@@ -165,10 +216,13 @@ export const Canvas = ({
 
         const current = pointerEventToCanvasPoint(e, camera);
 
-        if (canvasState.mode === CanvasMode.Translating){
+        if (canvasState.mode === CanvasMode.Pressing){
+            startMultiSelection(current, canvasState.origin);
+        }else if (canvasState.mode === CanvasMode.SelectionNet){
+            updateSelectionNet(current, canvasState.origin);
+        }else if (canvasState.mode === CanvasMode.Translating){
             translateSelectedLayers(current);
-        }
-        else if (canvasState.mode === CanvasMode.Resizing) {
+        }else if (canvasState.mode === CanvasMode.Resizing) {
             resizeSelectedLayer(current);
         }
 
@@ -251,10 +305,11 @@ export const Canvas = ({
 
     const point = pointerEventToCanvasPoint(e, camera);
 
-    if (!self.presence.selection.includes(layerId)) {
-        setMyPresence({ selection: [layerId]}, {addToHistory: true})
+    const selection = self.presence.selection as string[] | undefined;
+    if (!selection || !selection.includes(layerId)) {
+        setMyPresence({ selection: selection ? [...selection, layerId] : [layerId] }, {addToHistory: true})
     }
-    setCanvasState({mode: CanvasMode.Translating, current: point});
+    setCanvasState({mode: CanvasMode.Translating, current: point, initialPoint: point});
     }, [
         setCanvasState,
         camera,
@@ -302,6 +357,15 @@ export const Canvas = ({
                 undo = {history.undo}
                 redo = {history.redo}
             />
+
+            {isStorageLoaded && (
+                <SelectionTools
+                    camera = {camera}
+                    setLastUsedColor = {setLastUsedColor}
+                    isStorageLoaded = {isStorageLoaded}
+                />
+            )}
+
             <svg
                 className="h-[100vh] w-[100vw]"
                 onWheel = {onWheel}
