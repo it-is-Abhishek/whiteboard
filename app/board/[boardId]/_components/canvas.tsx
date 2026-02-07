@@ -48,7 +48,7 @@ export const Canvas = ({
         layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Text | LayerType.Note,
         position: Point, 
     ) => {
-        if (!storage) {
+        if (!isStorageLoaded || !storage) {
             return;
         }
         const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>>;
@@ -74,7 +74,7 @@ export const Canvas = ({
         setMyPresence({ selection : [layerId]}, { addToHistory: true});
         setCanvasState({ mode: CanvasMode.None });
 
-    }, [lastUsedColor]);
+    }, [lastUsedColor, isStorageLoaded]);
 
 
     const translateSelectedLayers = useMutation((
@@ -390,6 +390,15 @@ export const Canvas = ({
                     <SelectionBox
                         onResizeHandlePointerDown = {onResizeHandlePointerDown}
                     />
+                    {canvasState.mode === CanvasMode.SelectionNet && canvasState.current !== null && (
+                        <rect
+                            className="fill-blue-500/5 stroke-blue-500 stroke-1"
+                            x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                            y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                            width = {Math.abs(canvasState.origin.x - canvasState.current.x)}
+                            height = {Math.abs(canvasState.origin.y - canvasState.current.y)}
+                        />
+                    )}
                     <CursorPresence/>
                 </g>
             </svg>
