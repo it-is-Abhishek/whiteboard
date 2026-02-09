@@ -6,6 +6,7 @@ import { shallow, useOthersConnectionIds, useOthersMapped } from "@liveblocks/re
 import { Cursor } from "./cursor";
 import { Path } from "./path";
 import { colorTocss } from "@/lib/utils";
+import { Color } from "@/types/canvas";
 
 const Cursors = () => {
     const ids = useOthersConnectionIds();
@@ -24,19 +25,21 @@ const Cursors = () => {
 const Drafts = () => {
     const others = useOthersMapped((other) => ({
         pencilDraft: other.presence.pencilDraft,
-        pencolor: other.presence.penColor,
+        penColor: other.presence.penColor,
     }), shallow);
 
     return (
         others.map(([key, other]) => {
-            if (other.pencilDraft){
+            const pencilDraft = other.pencilDraft as number[][] | null;
+            const penColor = other.penColor as Color | null;
+            if (pencilDraft){
                 return(
                     <Path
                         key = {key}
                         x = {0}
                         y = {0}
-                        points = {other.pencilDraft}
-                        fill={other.penColor ? colorTocss(other.penColor) : "#000"}
+                        points = {pencilDraft}
+                        fill={penColor ? colorTocss(penColor) : "#000"}
                     />
                 );
             }

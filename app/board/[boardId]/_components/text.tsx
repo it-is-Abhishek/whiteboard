@@ -1,8 +1,9 @@
 import { Kalam } from "next/font/google";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { cn, colorTocss } from "@/lib/utils";
-import { TextLayer } from "@/types/canvas";
+import { TextLayer, Layer } from "@/types/canvas";
 import { useMutation } from "@liveblocks/react";
+import { LiveMap, LiveObject } from "@liveblocks/client";
 
 const font = Kalam({
     subsets: ["latin"],
@@ -39,7 +40,8 @@ export const Text = ({
         {storage},
         newValue : string,
     ) => {
-        const liveLayers = storage.get("layers");
+        const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
+        if (!liveLayers) return;
 
         liveLayers.get(id)?.set("value", newValue);
     }, []);

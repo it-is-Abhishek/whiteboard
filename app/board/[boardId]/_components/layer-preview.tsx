@@ -3,7 +3,7 @@
 
 import { memo } from "react";
 import { useStorage } from "@liveblocks/react";
-import { LayerType, RectangleLayer, EllipseLayer, TextLayer, Layer } from "@/types/canvas";
+import { LayerType, RectangleLayer, EllipseLayer, TextLayer, Layer, NoteLayer } from "@/types/canvas";
 import { LiveMap, LiveObject } from "@liveblocks/client";
 import { Rectangle } from "./rectangle";
 import { Ellipse } from "./ellipse";
@@ -32,16 +32,19 @@ export const LayerPreview = ({
         return null;
     }
 
-    switch (layer.type) {
+    // useStorage returns a plain object, not LiveObject
+    const layerData = layer as unknown as Layer;
+
+    switch (layerData.type) {
         case LayerType.Path:
             return (
                 <Path
                     key = {id}
-                    points = {layer.points}
+                    points = {layerData.points}
                     onPointerDown = {(e) => onLayerPointDown(e, id)}
-                    x = {layer.x}
-                    y = {layer.y}
-                    fill = {layer.fill ? colorTocss(layer.fill) : "#000"}
+                    x = {layerData.x}
+                    y = {layerData.y}
+                    fill = {layerData.fill ? colorTocss(layerData.fill) : "#000"}
                     stroke = {selectionColor}
                 />
             );
@@ -50,7 +53,7 @@ export const LayerPreview = ({
             return (
                 <Note
                     id = {id}
-                    layer = {layer as unknown as TextLayer}
+                    layer = {layerData as NoteLayer}
                     onPointerDown = {onLayerPointDown}
                     selectionColor = {selectionColor}
                 />
@@ -60,7 +63,7 @@ export const LayerPreview = ({
             return (
                 <Text
                     id = {id}
-                    layer = {layer as unknown as TextLayer}
+                    layer = {layerData as TextLayer}
                     onPointerDown = {onLayerPointDown}
                     selectionColor = {selectionColor}
                 />
@@ -70,7 +73,7 @@ export const LayerPreview = ({
             return (
                 <Ellipse
                     id = {id}
-                    layer = {layer as unknown as EllipseLayer}
+                    layer = {layerData as EllipseLayer}
                     selectionColor = {selectionColor}
                     onPointerDown = {onLayerPointDown}
                 />
@@ -80,8 +83,8 @@ export const LayerPreview = ({
             return (
                 <Rectangle
                     id = {id}
-                    layer = {layer as unknown as RectangleLayer}
-                    onPointDown = {onLayerPointDown}
+                    layer = {layerData as RectangleLayer}
+                    onPointerDown = {onLayerPointDown}
                     selectionColor = {selectionColor}
                 />
             );

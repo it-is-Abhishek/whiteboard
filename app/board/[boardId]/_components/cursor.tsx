@@ -4,6 +4,7 @@ import { memo } from "react";
 import { MousePointer2 } from "lucide-react";
 import { connectionIdColor } from "@/lib/utils";
 import { useOther } from "@liveblocks/react";
+import { Point } from "@/types/canvas";
 
 interface CursorProps {
     connectionId: number;
@@ -14,7 +15,7 @@ export const Cursor = memo(({
 }: CursorProps) => {
 
     const info = useOther(connectionId, (user) => user?.info);
-    const cursor = useOther(connectionId, (user) => user.presence.cursor)
+    const cursor = useOther(connectionId, (user) => user.presence.cursor) as Point | null;
     const name = info?.name || "Teammate";
 
 

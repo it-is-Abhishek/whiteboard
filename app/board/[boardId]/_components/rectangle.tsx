@@ -5,7 +5,7 @@ import { RectangleLayer } from "@/types/canvas";
 interface RectangleProps {
     id: string;
     layer: RectangleLayer;
-    onPointDown: (e: React.PointerEvent, id: string) => void;
+    onPointerDown: (e: React.PointerEvent, id: string) => void;
     selectionColor?: string;
 };
 

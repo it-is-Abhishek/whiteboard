@@ -2,9 +2,11 @@
 
 import { useSelf, useMutation} from "@liveblocks/react";
 import { useStorage } from "@/liveblocks.config";
+import { LiveMap, LiveList } from "@liveblocks/client";
+import { Layer } from "@/types/canvas";
 
 export const useDeleteLayer = () => {
-    const selection = useSelf((me) => me.presence.selection);
+    const selection = useSelf((me) => me.presence.selection as string[] | undefined);
     const isStorageLoaded = useStorage((root) => root.layerIds) !== undefined;
 
     return useMutation((
@@ -12,16 +14,18 @@ export const useDeleteLayer = () => {
     ) => {
         if (!isStorageLoaded) return;
 
-        const livelayers = storage.get("layers");
-        const livelayersIds = storage.get("layerIds");
+        const livelayers = storage.get("layers") as LiveMap<string, Layer> | undefined;
+        const livelayersIds = storage.get("layerIds") as LiveList<string> | undefined;
 
-        selection?.forEach((id) => {
-            livelayers?.delete(id);
+        if (!livelayers || !livelayersIds) return;
 
-            const index = livelayersIds?.indexOf(id);
+        selection?.forEach((id: string) => {
+            livelayers.delete(id);
+
+            const index = livelayersIds.indexOf(id);
 
             if (index !== -1){
-                livelayersIds?.delete(index);
+                livelayersIds.delete(index);
             }
         })
 

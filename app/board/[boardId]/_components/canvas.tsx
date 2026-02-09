@@ -136,16 +136,18 @@ export const Canvas = ({
         current: Point,
         origin: Point,
     ) => {
-        const layers = storage.get("layers").toImmutable();
+        const layers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
         setCanvasState({
             mode: CanvasMode.SelectionNet,
             origin,
             current,
         });
 
+        if (!layers || !layerIds) return;
+
         const ids = findIntersectingLayersWithRectangle(
-            layerIds,
-            layers,
+            [...layerIds],
+            layers.toImmutable(),
             origin,
             current,
         );
@@ -173,10 +175,11 @@ export const Canvas = ({
         point: Point,
         e: React.PointerEvent,
     ) => {
-        const { pencilDraft } = self.presence;
+        const pencilDraft = self.presence.pencilDraft as number[][] | null;
+        if (pencilDraft == null) return;
+        
         if (canvasState.mode !== CanvasMode.Pencil || 
-            e.buttons !== 1 ||
-            pencilDraft == null
+            e.buttons !== 1
         ){
             return;
         }
@@ -195,12 +198,13 @@ export const Canvas = ({
     const insertPath = useMutation((
         { storage, self, setMyPresence }
     ) => {
-        const liveLayers = storage.get("layers");
-        const { pencilDraft } = self.presence;
+        const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
+        const pencilDraft = self.presence.pencilDraft as number[][] | null;
 
         if (
             pencilDraft == null ||
             pencilDraft.length < 2 ||
+            !liveLayers ||
             liveLayers.size >= MAX_LAYERS
         ){
             setMyPresence({ pencilDraft: null });
@@ -216,7 +220,7 @@ export const Canvas = ({
             )),
         );
 
-        const liveLayerIds = storage.get("layerIds");
+        const liveLayerIds = storage.get("layerIds") as LiveList<string>;
         liveLayerIds.push(id);
 
         setMyPresence({ pencilDraft: null });
@@ -415,19 +419,8 @@ export const Canvas = ({
         return layerIdsToColorSelection;
     }, [selections]);
     
-
-    if (!isStorageLoaded) {
-        return (
-            <div className="h-full w-full flex items-center justify-center bg-neutral-100">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="text-neutral-500 font-medium">Loading canvas...</p>
-                </div>
-            </div>
-        );
-    }
-
     const deleteLayers = useDeleteLayer();
+    
     useEffect(() => {
         function onKeyDown(e: KeyboardEvent){
             // case "Backspace":
@@ -452,6 +445,17 @@ export const Canvas = ({
             document.removeEventListener("keydown", onKeyDown)
         }
     }, [deleteLayers, history])
+
+    if (!isStorageLoaded) {
+        return (
+            <div className="h-full w-full flex items-center justify-center bg-neutral-100">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p className="text-neutral-500 font-medium">Loading canvas...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <main
@@ -499,7 +503,7 @@ export const Canvas = ({
                     <SelectionBox
                         onResizeHandlePointerDown = {onResizeHandlePointerDown}
                     />
-                    {canvasState.mode === CanvasMode.SelectionNet && canvasState.current !== null && (
+                    {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
                         <rect
                             className="fill-blue-500/5 stroke-blue-500 stroke-1"
                             x={Math.min(canvasState.origin.x, canvasState.current.x)}
@@ -509,9 +513,9 @@ export const Canvas = ({
                         />
                     )}
                     <CursorPresence/>
-                    {pencilDraft != null && pencilDraft.length > 0 && (
+                    {pencilDraft && (pencilDraft as number[][]).length > 0 && (
                         <Path
-                            points = {pencilDraft}
+                            points = {pencilDraft as number[][]}
                             fill = {colorTocss(lastUsedColor)}
                             x = {0}
                             y = {0}

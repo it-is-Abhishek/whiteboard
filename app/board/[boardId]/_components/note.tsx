@@ -3,6 +3,8 @@ import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { cn, colorTocss, getContrastingTextColor } from "@/lib/utils";
 import { NoteLayer } from "@/types/canvas";
 import { useMutation } from "@liveblocks/react";
+import { LiveMap, LiveObject } from "@liveblocks/client";
+import { Layer } from "@/types/canvas";
 
 const font = Kalam({
     subsets: ["latin"],
@@ -32,14 +34,15 @@ export const Note = ({
     onPointerDown,
     id,
     selectionColor,
-}: TextProps) => {
+}: NoteProps) => {
     const { x, y, width, height, fill, value} = layer;
 
     const updateValue = useMutation((
         {storage},
         newValue : string,
     ) => {
-        const liveLayers = storage.get("layers");
+        const liveLayers = storage.get("layers") as LiveMap<string, LiveObject<Layer>> | undefined;
+        if (!liveLayers) return;
 
         liveLayers.get(id)?.set("value", newValue);
     }, []);
