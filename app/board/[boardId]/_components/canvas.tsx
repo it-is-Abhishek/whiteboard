@@ -90,6 +90,8 @@ export const Canvas = ({
         {storage, self},
         point: Point,
     ) => {
+        if (!isStorageLoaded) return;
+        
         if (canvasState.mode !== CanvasMode.Translating || !canvasState.initialPoint){
             return;
         }
@@ -175,6 +177,8 @@ export const Canvas = ({
         point: Point,
         e: React.PointerEvent,
     ) => {
+        if (!isStorageLoaded) return;
+        
         const pencilDraft = self.presence.pencilDraft as number[][] | null;
         if (pencilDraft == null) return;
         
@@ -246,6 +250,8 @@ export const Canvas = ({
         { storage , self},
         point: Point,
     ) => {
+        if (!isStorageLoaded) return;
+        
         if (canvasState.mode !== CanvasMode.Resizing){
             return;
         }
@@ -293,6 +299,8 @@ export const Canvas = ({
     }, []);
 
     const onPointerMove = useMutation(({setMyPresence}, e: React.PointerEvent) => {
+        if (!isStorageLoaded) return;
+        
         e.preventDefault();
 
         const current = pointerEventToCanvasPoint(e, camera);
@@ -322,6 +330,8 @@ export const Canvas = ({
     ]);
 
     const onPointerLeave = useMutation(({ setMyPresence }) => {
+        if (!isStorageLoaded) return;
+        
         setMyPresence({ cursor: null});
     }, [])
 
@@ -380,6 +390,7 @@ export const Canvas = ({
         e: React.PointerEvent,
         layerId: string,
     ) => {
+        if (!isStorageLoaded) return;
 
     if  (canvasState.mode === CanvasMode.Pencil || 
         canvasState.mode === CanvasMode.Inserting

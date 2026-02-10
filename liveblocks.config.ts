@@ -8,11 +8,9 @@ import {
 import { createRoomContext } from "@liveblocks/react";
 import { Layer, Color } from "@/types/canvas";
 
-
 const client = createClient({
   throttle: 16,
   authEndpoint: "/api/liveblocks-auth",
-  
 });
 
 type UserMeta = {
@@ -24,7 +22,7 @@ type UserMeta = {
 };
 
 type Presence = {
-  cursor : {x :number , y: number } | null,
+  cursor: { x: number; y: number } | null;
   selection: string[];
   pencilDraft: [x: number, y: number, pressure: number[]] | null;
   penColor: Color | null;
@@ -33,7 +31,7 @@ type Presence = {
 type Storage = {
   layers: LiveMap<string, LiveObject<Layer>>;
   layerIds: LiveList<string>;
-}
+};
 
 export const {
   RoomProvider,
@@ -56,4 +54,5 @@ export const {
   useCreateThread,
   useEditThreadMetadata,
   useRoomInfo,
-} = createRoomContext(client);
+} = createRoomContext<Presence, Storage, UserMeta>(client);
+
